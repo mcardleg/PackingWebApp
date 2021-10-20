@@ -83,34 +83,37 @@ let weather = (location, key) => {
         .catch(error => console.log('error', error));   
 }
 
-/*
-let pollution = (location, key) => {
+let coordinates = (location, key) => {
     let url = 'https://api.openweathermap.org/data/2.5/weather?q=' + location + '&APPID=' + key
 
     var requestOptions = {
         method: 'GET',
         redirect: 'follow'
-      };
-      
-    fetch(url, requestOptions)
+    };
+    
+    return  fetch(url, requestOptions)
         .then(response => response.json())
         .then(result => {
-            let coordinates = result.coord
+            return result.coord
         })
-        .catch(error => console.log('error', error));
+        .catch(error => console.log('error', error));   
 }
-*/
 
 let location = "Dublin,Ireland"
 let key = "3e2d927d4f28b456c6bc662f34350957"
-//weather(location, key)
-//pollution(location, key)
-//let coord = coordinates(location, key)
-//console.log(coord)
 
-let p = new Promise((resolve, reject) => {
+let p1 = new Promise((resolve, reject) => {
     resolve(weather(location, key))
 });
 
-p.then(data => console.log(data))
+let p2 = new Promise((resolve, reject) => {
+    resolve(coordinates(location, key))
+});
+
+p1.then(console.log("1"))
+p2.then(console.log("2"))
+
+Promise.all([p1, p2]).then(console.log("reached"))
+
+
 
