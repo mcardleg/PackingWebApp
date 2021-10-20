@@ -64,32 +64,58 @@ let table_info = (list) => {
     return table
 }
 
-let pollution = (list) => {
+let weather = (location) => {
+    let key = "3e2d927d4f28b456c6bc662f34350957"
+    let url = 'https://api.openweathermap.org/data/2.5/forecast?q=' + location + '&appid=' + key
+    let umbrella
+    let clothes_type
+    let table
+    
+    var requestOptions = {
+        method: 'GET',
+        redirect: 'follow'
+    };
+    
+    fetch(url, requestOptions)
+        .then(response => response.json())
+        .then(result => {
+            let list = []
+            list = result.list
+            umbrella = rain(list)
+            clothes_type = temp(list)
+            table = table_info(list)
+            console.log("umbrella " + umbrella + "\nclothes type " + clothes_type + "\ntable " + table)
+        })
+        .catch(error => console.log('error', error));    
+}
+
+let coordinates = (location) => {
+    let key = "3e2d927d4f28b456c6bc662f34350957"
+    let url = 'https://api.openweathermap.org/data/2.5/weather?q=' + location + '&APPID=' + key
+    let coordinates
+
+    var requestOptions = {
+        method: 'GET',
+        redirect: 'follow'
+      };
+      
+    fetch(url, requestOptions)
+        .then(response => response.json())
+        .then(result => {
+            coordinates = result.coord
+        })
+        .catch(error => console.log('error', error));
+    
+        return coordinates
+}
+
+let pollution = (location) => {
     
 }
 
 let location = "Dublin,Ireland"
-let key = "3e2d927d4f28b456c6bc662f34350957"
-let url = 'https://api.openweathermap.org/data/2.5/forecast?q=' + location + '&appid=' + key
+//weather(location)
+pollution(location)
 
-var requestOptions = {
-    method: 'GET',
-    redirect: 'follow'
-};
 
-fetch(url, requestOptions)
-    .then(response => response.json())
-    .then(result => {
-        let list = []
-        list = result.list
-//        let umbrella = rain(list)
-//        console.log(umbrella)
-//        let clothes_type = temp(list)
-//        console.log(clothes_type)
-//        let table = table_info(list)
-//        console.log(table)
-        pollution(list)
-
-    })
-    .catch(error => console.log('error', error));
 
