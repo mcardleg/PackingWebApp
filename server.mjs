@@ -64,8 +64,7 @@ let table_info = (list) => {
     return table
 }
 
-let weather = (location) => {
-    let key = "3e2d927d4f28b456c6bc662f34350957"
+let weather = (location, key) => {
     let url = 'https://api.openweathermap.org/data/2.5/forecast?q=' + location + '&appid=' + key
     let umbrella
     let clothes_type
@@ -88,11 +87,10 @@ let weather = (location) => {
         })
         .catch(error => console.log('error', error));    
 }
-
-let coordinates = (location) => {
-    let key = "3e2d927d4f28b456c6bc662f34350957"
+/*
+let coordinates = (location, key) => {
     let url = 'https://api.openweathermap.org/data/2.5/weather?q=' + location + '&APPID=' + key
-    let coordinates
+    let coordinates = []
 
     var requestOptions = {
         method: 'GET',
@@ -105,17 +103,32 @@ let coordinates = (location) => {
             coordinates = result.coord
         })
         .catch(error => console.log('error', error));
-    
-        return coordinates
+
+    console.log(coordinates)
 }
 
-let pollution = (location) => {
-    
+let pollution = (location, key) => {
+    coordinates(location, key)
+    //console.log(coord)
+    //console.log(coord)
+    let url = 'http://api.openweathermap.org/data/2.5/air_pollution?lat=' + coord["lat"] + '&lon=' coord["lon"] + '&appid=' + key
+
+    var requestOptions = {
+        method: 'GET',
+        redirect: 'follow'
+      };
+      
+      fetch(url, requestOptions)
+        .then(response => response.json())
+        .then(result => console.log(result))
+        .catch(error => console.log('error', error));
+        */
 }
 
 let location = "Dublin,Ireland"
-//weather(location)
-pollution(location)
+let key = "3e2d927d4f28b456c6bc662f34350957"
+weather(location, key)
+//pollution(location, key)
 
 
 
