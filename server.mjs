@@ -1,4 +1,7 @@
 import fetch from 'node-fetch';
+import { resolve } from 'path/posix';
+
+let coordinates
 
 let rain = (list) => {
     let rain = false
@@ -66,9 +69,6 @@ let table_info = (list) => {
 
 let weather = (location, key) => {
     let url = 'https://api.openweathermap.org/data/2.5/forecast?q=' + location + '&appid=' + key
-    let umbrella
-    let clothes_type
-    let table
     
     var requestOptions = {
         method: 'GET',
@@ -79,13 +79,20 @@ let weather = (location, key) => {
         .then(response => response.json())
         .then(result => {
             let list = []
+            let umbrella
+            let clothes_type
+            let table
             list = result.list
             umbrella = rain(list)
             clothes_type = temp(list)
             table = table_info(list)
+    /*        result[0] = umbrella
+            result[1] = clothes_type
+            result[2] = table   */
             console.log("umbrella " + umbrella + "\nclothes type " + clothes_type + "\ntable " + table)
         })
-        .catch(error => console.log('error', error));    
+    //    .then(result => console.log(result))
+        .catch(error => console.log('error', error));  
 }
 
 let pollution = (location, key) => {
@@ -99,7 +106,7 @@ let pollution = (location, key) => {
     fetch(url, requestOptions)
         .then(response => response.json())
         .then(result => {
-            let coordinates = result.coord
+            coordinates = result.coord
         })
         .catch(error => console.log('error', error));
 }
@@ -109,7 +116,12 @@ let key = "3e2d927d4f28b456c6bc662f34350957"
 //weather(location, key)
 //pollution(location, key)
 
-let coord = coordinates(location, key)
-console.log(coord)
+//coordinates(location, key)
+
+let p = new Promise((resolve,reject) => {
+    resolve(weather(location, key))
+});
+
+//p.then(() => {console.log("umbrella " + umbrella + "\nclothes type " + clothes_type + "\ntable " + table)});
 
 
