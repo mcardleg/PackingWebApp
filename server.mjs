@@ -38,7 +38,6 @@ let table_info = (list) => {
     let temp = []
     let wind = []
     let rain = []
-    let table = []
 
     for (let i=0; i<list.length; i++){
         temp[i] = list[i].main.temp
@@ -58,36 +57,33 @@ let table_info = (list) => {
         }
     }
 
-    table[0] = temp
-    table[1] = wind
-    table[2] = rain
+    let table = {temp, wind, rain}
     return table
 }
 
 let weather = (location, key) => {
     let url = 'https://api.openweathermap.org/data/2.5/forecast?q=' + location + '&appid=' + key
-    let umbrella
-    let clothes_type
-    let table
-    
+
     var requestOptions = {
         method: 'GET',
         redirect: 'follow'
     };
     
-    fetch(url, requestOptions)
+    return  fetch(url, requestOptions)
         .then(response => response.json())
         .then(result => {
             let list = []
             list = result.list
-            umbrella = rain(list)
-            clothes_type = temp(list)
-            table = table_info(list)
-            console.log("umbrella " + umbrella + "\nclothes type " + clothes_type + "\ntable " + table)
+            let umbrella = rain(list)
+            let clothes_type = temp(list)
+            let table = table_info(list)
+            return {umbrella, clothes_type, table}
+            //console.log("umbrella " + umbrella + "\nclothes type " + clothes_type + "\ntable " + table)
         })
-        .catch(error => console.log('error', error));    
+        .catch(error => console.log('error', error));   
 }
 
+/*
 let pollution = (location, key) => {
     let url = 'https://api.openweathermap.org/data/2.5/weather?q=' + location + '&APPID=' + key
 
@@ -103,13 +99,18 @@ let pollution = (location, key) => {
         })
         .catch(error => console.log('error', error));
 }
+*/
 
 let location = "Dublin,Ireland"
 let key = "3e2d927d4f28b456c6bc662f34350957"
 //weather(location, key)
 //pollution(location, key)
+//let coord = coordinates(location, key)
+//console.log(coord)
 
-let coord = coordinates(location, key)
-console.log(coord)
+let p = new Promise((resolve, reject) => {
+    resolve(weather(location, key))
+});
 
+p.then(data => console.log(data))
 
