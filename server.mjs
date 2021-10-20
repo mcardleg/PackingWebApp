@@ -99,6 +99,30 @@ let coordinates = (location, key) => {
         .catch(error => console.log('error', error));   
 }
 
+let pollution = (coord, key) => {
+    let url = 'http://api.openweathermap.org/data/2.5/air_pollution/forecast?lat=' + coord.lat + '&lon=' + coord.lon + '&appid=' + key
+
+    var requestOptions = {
+        method: 'GET',
+        redirect: 'follow'
+    };
+    
+    return  fetch(url, requestOptions)
+        .then(response => response.json())
+        .then(result => {
+            let list = result.list
+            
+            for (let i=0; i<list.length; i++){
+                if (list[i].components.pm2_5 > 10){
+                    return true
+                }
+            }
+
+            return false
+        })
+        .catch(error => console.log('error', error));   
+}
+
 let location = "Dublin,Ireland"
 let key = "3e2d927d4f28b456c6bc662f34350957"
 
@@ -110,10 +134,10 @@ let p2 = new Promise((resolve, reject) => {
     resolve(coordinates(location, key))
 });
 
-p1.then(console.log("1"))
-p2.then(console.log("2"))
+p2.then(coord => pollution(coord, key))
+    .then(mask => console.log(mask))
 
-Promise.all([p1, p2]).then(console.log("reached"))
+//Promise.all([p1, p2]).then(console.log("reached"))
 
 
 
