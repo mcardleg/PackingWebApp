@@ -144,13 +144,14 @@ let data_retrieval = (location) => {
     let p2 = new Promise((resolve, reject) => {
         resolve(mask(location, key))
     });
-    
-//    p2.then(coord => pollution(coord, key))
-//       .then(mask => console.log("mask: " + mask))
-
+    p2.then(mask => {
+        console.log(mask)
+    })
+  /*  
     Promise.all([p1, p2]).then(values => {
         console.log(values)
     })
+    */
 }
 
 let server = () => {
