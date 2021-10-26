@@ -1,68 +1,67 @@
 import fetch from 'node-fetch';
 import express from 'express';
 
-let rain = (list) => {
-    let rain = false
+const rain_func = (list) => {
+    let prom = new Promise(resolve => {
+        let rain_bool = false
+        let rain_array = []
 
-    for (let i=0; i<list.length; i++){
-        if (list[i].hasOwnProperty('rain')){
-            rain = true
-            break
+        for (let i=0; i<list.length; i++){
+            if (list[i].hasOwnProperty('rain')){
+                rain_bool = true
+                rain_array[i] = list[i].rain["3h"]
+            }
+            else {
+                rain_array[i] = 0
+            }
         }
-    }
-    return rain
+        resolve({rain_bool, rain_array})
+    })
+    return (prom)
 }
 
-let temp = (list) => {
-    let sum = 0 
-    for (let i=0; i<list.length; i++){
-        sum = sum + list[i].main.temp
-    }
-    let avg_temp = sum / list.length - 273.15
-    //console.log(avg_temp)
+const temp_func = (list) => {
+    return new Promise(resolve => {
+        var sum = 0 
+        let temp = []
+        var clothes
 
-    let temp
-    if (avg_temp < 10){
-        temp = "Cold"
-    }
-    else if (avg_temp >= 20){
-        temp = "Hot"
-    }
-    else {
-        temp = "Warm"
-    }
-
-    return temp
-}
-
-let table_info = (list) => {
-    let temp = []
-    let wind = []
-    let rain = []
-
-    for (let i=0; i<list.length; i++){
-        temp[i] = list[i].main.temp
-
-        if (list[i].hasOwnProperty('wind')){
-            wind[i] = list[i].wind.speed
+        for (let i=0; i<list.length; i++){
+            sum = sum + list[i].main.temp
+            temp[i] = list[i].main.temp
+        }
+        let avg_temp = sum / list.length - 273.15
+    
+        if (avg_temp < 10){
+            clothes = "Cold"
+        }
+        else if (avg_temp >= 20){
+            clothes = "Hot"
         }
         else {
-            wind[i] = 0
+            clothes = "Warm"
         }
-
-        if (list[i].hasOwnProperty('rain')){
-            rain[i] = list[i].rain["3h"]
-        }
-        else {
-            rain[i] = 0
-        }
-    }
-
-    let table = {temp, wind, rain}
-    return table
+        resolve({clothes, temp})
+    })
 }
 
-let weather = (location, key) => {
+const wind_func = (list) => {
+    return new Promise(resolve => {
+        let wind = []
+
+        for(let i=0; i<list.length; i++){
+            if (list[i].hasOwnProperty('wind')){
+                wind[i] = list[i].wind.speed
+            }
+            else {
+                wind[i] = 0
+            }
+        }
+        resolve(wind)
+    })
+}
+
+const get_list = (location, key) => {
     let url = 'https://api.openweathermap.org/data/2.5/forecast?q=' + location + '&appid=' + key
 
     var requestOptions = {
@@ -70,21 +69,18 @@ let weather = (location, key) => {
         redirect: 'follow'
     };
     
-    return  fetch(url, requestOptions)
+    return (fetch(url, requestOptions)
         .then(response => response.json())
         .then(result => {
             let list = []
             list = result.list
-            let umbrella = rain(list)
-            let clothes_type = temp(list)
-            let table = table_info(list)
-            return {umbrella, clothes_type, table}
-            //console.log("umbrella " + umbrella + "\nclothes type " + clothes_type + "\ntable " + table)
+            return(list)
         })
-        .catch(error => console.log('error', error));   
+        .catch(error => console.log('error', error))   
+    )
 }
 
-let coordinates = (location, key) => {
+const coordinates_func = (location, key) => {
     let url = 'https://api.openweathermap.org/data/2.5/weather?q=' + location + '&APPID=' + key
 
     var requestOptions = {
@@ -92,74 +88,70 @@ let coordinates = (location, key) => {
         redirect: 'follow'
     };
     
-    return fetch(url, requestOptions)
+    return (fetch(url, requestOptions)
         .then(response => response.json())
         .then(result => {
             return result.coord
         })
-        .catch(error => console.log('error', error));   
+        .catch(error => console.log('error', error))  
+    )
 }
 
-let pollution = (coord, key) => {
-    let url = 'http://api.openweathermap.org/data/2.5/air_pollution/forecast?lat=' + coord.lat + '&lon=' + coord.lon + '&appid=' + key
+const mask_func = async(location, key) => {
+    let coord = await coordinates_func(location, key)
+    const url = 'http://api.openweathermap.org/data/2.5/air_pollution/forecast?lat=' + coord.lat + '&lon=' + coord.lon + '&appid=' + key
 
     var requestOptions = {
         method: 'GET',
         redirect: 'follow'
     };
-    
-    return  fetch(url, requestOptions)
-        .then(response => response.json())
-        .then(result => {
-            let list = result.list
-            
-            for (let i=0; i<list.length; i++){
-                if (list[i].components.pm2_5 > 10){
-                    return true
-                }
+    return (fetch(url, requestOptions)
+    .then(response => response.json())
+    .then(result => {
+        let list = result.list
+        
+        for (let i=0; i<list.length; i++){
+            if (list[i].components.pm2_5 > 10){
+                return true
             }
+        }
 
-            return false
-        })
-        .catch(error => console.log('error', error));   
-}
-
-let mask = (location, key) => {
-    let prom = new Promise((resolve, reject) => {
-        resolve(coordinates(location, key))
-    });
-    prom.then(coord => pollution(coord, key))
-    .then(mask => {
-        return mask
-    });
-}
-
-let data_retrieval = (location) => {
-    let key = "3e2d927d4f28b456c6bc662f34350957"
-
-    let p1 = new Promise((resolve, reject) => {
-        resolve(weather(location, key))
-    });
-    
-    let p2 = new Promise((resolve, reject) => {
-        resolve(mask(location, key))
-    });
-    p2.then(mask => {
-        console.log(mask)
+        return false
     })
-  /*  
-    Promise.all([p1, p2]).then(values => {
-        console.log(values)
-    })
-    */
+    .catch(error => console.log('error', error))
+    )
 }
 
-let server = () => {
+const data_func = async(location, key) => {
+    let list, rain_return, temp_return, wind, umbrella, rain, clothes, temp, mask
+    list = await get_list(location, key)
+    rain_return = await rain_func(list)
+    temp_return = await temp_func(list)
+    wind = await wind_func(list)   
+    mask = await mask_func(location, key)
+
+    umbrella = rain_return.rain_bool
+    rain = rain_return.rain_array
+    clothes = temp_return.clothes
+    temp = temp_return.temp
+    return({umbrella, clothes, rain, temp, wind, mask})
+}
+
+const create_json = async(location) => {
+    const key = "3e2d927d4f28b456c6bc662f34350957"
+    let object = await data_func(location, key)
+    let json = JSON.stringify(object)
+    return(json)
+}
+
+const server = async() => {
     const port = 3000
     var app = express();
     
-    app.get('/', function (req, res) {
-       res.send('Hello');
+    app.get('/', async(req, res) => {
+        let data = await create_json("Dublin,Ireland")
+        //console.log(data)
+        res.send(data)
     })
     
     var server = app.listen(port, function () {
@@ -168,8 +160,6 @@ let server = () => {
        
        console.log("Example app listening at http://%s:%s", host, port)
     })
-
-    data_retrieval("Dublin,Ireland")
 }
 
 server()
