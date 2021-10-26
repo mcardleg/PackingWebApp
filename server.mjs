@@ -112,7 +112,7 @@ let pollution = (coord, key) => {
         .then(response => response.json())
         .then(result => {
             let list = result.list
-            
+            console.log(list)
             for (let i=0; i<list.length; i++){
                 if (list[i].components.pm2_5 > 10){
                     return true
@@ -124,6 +124,20 @@ let pollution = (coord, key) => {
         .catch(error => console.log('error', error));   
 }
 
+let mask = (location, key) => {
+    let prom = new Promise((resolve, reject) => {
+        resolve(coordinates(location, key))
+    })
+    prom.then(coord => {
+        resolve(pollution(coord, key))
+    })
+    .then(pol => {
+        console.log(pol)
+        return(pol)
+    })
+    .catch(error => console.log('error', error));   
+}
+
 let data_retrieval = (location) => {
     let key = "3e2d927d4f28b456c6bc662f34350957"
 
@@ -132,13 +146,18 @@ let data_retrieval = (location) => {
     });
     
     let p2 = new Promise((resolve, reject) => {
-        resolve(coordinates(location, key))
+        resolve(mask(location, key))
     });
-    
-    p2.then(coord => pollution(coord, key))
-        .then(mask => console.log(mask))
 
-    //Promise.all([p1, p2]).then(console.log("reached"))
+    Promise.all([p1, p2]).then(values => {
+ /*       let umbrella = values[0].umbrella
+        let clothes = values[0].clothes_type
+        let temps = values[0].table.temp
+        let wind = values[0].table.wind
+        let rain = values[0].table.rain
+        let data = {umbrella, clothes, temps, wind, rain, mask} */
+        console.log(values)
+    }).catch(error => console.log('error', error))
 }
 
 let server = () => {
@@ -155,6 +174,10 @@ let server = () => {
        
        console.log("Example app listening at http://%s:%s", host, port)
     })
+
+    //post => pass location to data retrieval
+    data_retrieval("Dublin,Ireland")
+    //get => send JSON version of all the data
 }
 
 server()
