@@ -92,7 +92,7 @@ let coordinates = (location, key) => {
         redirect: 'follow'
     };
     
-    return  fetch(url, requestOptions)
+    return fetch(url, requestOptions)
         .then(response => response.json())
         .then(result => {
             return result.coord
@@ -124,6 +124,16 @@ let pollution = (coord, key) => {
         .catch(error => console.log('error', error));   
 }
 
+let mask = (location, key) => {
+    let prom = new Promise((resolve, reject) => {
+        resolve(coordinates(location, key))
+    });
+    prom.then(coord => pollution(coord, key))
+    .then(mask => {
+        return mask
+    });
+}
+
 let data_retrieval = (location) => {
     let key = "3e2d927d4f28b456c6bc662f34350957"
 
@@ -132,13 +142,15 @@ let data_retrieval = (location) => {
     });
     
     let p2 = new Promise((resolve, reject) => {
-        resolve(coordinates(location, key))
+        resolve(mask(location, key))
     });
     
-    p2.then(coord => pollution(coord, key))
-        .then(mask => console.log(mask))
+//    p2.then(coord => pollution(coord, key))
+//       .then(mask => console.log("mask: " + mask))
 
-    //Promise.all([p1, p2]).then(console.log("reached"))
+    Promise.all([p1, p2]).then(values => {
+        console.log(values)
+    })
 }
 
 let server = () => {
@@ -155,6 +167,8 @@ let server = () => {
        
        console.log("Example app listening at http://%s:%s", host, port)
     })
+
+    data_retrieval("Dublin,Ireland")
 }
 
 server()
