@@ -1,25 +1,26 @@
 import fetch from 'node-fetch';
 import express from 'express';
 
-const rain = (list) => {
-    return new Promise(resolve => {
+const rain_func = (list) => {
+    let prom = new Promise(resolve => {
         let rain_bool = false
-        let rain = []
+        let rain_array = []
 
         for (let i=0; i<list.length; i++){
             if (list[i].hasOwnProperty('rain')){
                 rain_bool = true
-                rain[i] = list[i].rain["3h"]
+                rain_array[i] = list[i].rain["3h"]
             }
             else {
-                rain[i] = 0
+                rain_array[i] = 0
             }
         }
-        resolve({rain_bool, rain})
+        resolve({rain_bool, rain_array})
     })
+    return (prom)
 }
 
-const temp = (list) => {
+const temp_func = (list) => {
     return new Promise(resolve => {
         var sum = 0 
         let temp = []
@@ -44,7 +45,7 @@ const temp = (list) => {
     })
 }
 
-const wind = (list) => {
+const wind_func = (list) => {
     return new Promise(resolve => {
         let wind = []
 
@@ -80,22 +81,17 @@ const get_list = (location, key) => {
 }
 
 const weather = async(location, key) => {
-    let list = await get_list(location, key)
-    console.log(list)
+    let list, rain_return, temp_return, wind, umbrella, rain, clothes, temp
+    list = await get_list(location, key)
+    rain_return = await rain_func(list)
+    temp_return = await temp_func(list)
+    wind = await wind_func(list)   
+
+    umbrella = rain_return.rain_bool
+    rain = rain_return.rain_array
+    clothes = temp_return.clothes
+    temp = temp_return.temp
+    console.log({umbrella, clothes, rain, temp, wind})
 }
 
-/*
-            let list = []
-            list = result.list
-            let rain_return = await rain(list)
-            let umbrella = rain_return.rain_bool
-            let rain = rain_return.rain
-            let temp_return = await temp(list)
-            let clothes = temp_return.clothes
-            let temp = temp_return.temp
-            let wind = await wind(list)
-            console.log({umbrella, clothes, rain, temp, wind})
-            resolve({umbrella, clothes, rain, temp, wind})
-*/
-
-weather("Dublin, Ireland", "3e2d927d4f28b456c6bc662f34350957")
+weather("Moscow,Russia", "3e2d927d4f28b456c6bc662f34350957")
