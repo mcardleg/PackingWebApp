@@ -80,18 +80,68 @@ const get_list = (location, key) => {
     )
 }
 
-const weather = async(location, key) => {
-    let list, rain_return, temp_return, wind, umbrella, rain, clothes, temp
+const coordinates_func = (location, key) => {
+    let url = 'https://api.openweathermap.org/data/2.5/weather?q=' + location + '&APPID=' + key
+
+    var requestOptions = {
+        method: 'GET',
+        redirect: 'follow'
+    };
+    
+    return (fetch(url, requestOptions)
+        .then(response => response.json())
+        .then(result => {
+            return result.coord
+        })
+        .catch(error => console.log('error', error))  
+    )
+}
+
+const mask_func = async(location, key) => {
+    let coord = await coordinates_func(location, key)
+    const url = 'http://api.openweathermap.org/data/2.5/air_pollution/forecast?lat=' + coord.lat + '&lon=' + coord.lon + '&appid=' + key
+
+    var requestOptions = {
+        method: 'GET',
+        redirect: 'follow'
+    };
+    return (fetch(url, requestOptions)
+    .then(response => response.json())
+    .then(result => {
+        let list = result.list
+        
+        for (let i=0; i<list.length; i++){
+            if (list[i].components.pm2_5 > 10){
+                return true
+            }
+        }
+
+        return false
+    })
+    .catch(error => console.log('error', error))
+    )
+}
+
+const data_func = async(location, key) => {
+    let list, rain_return, temp_return, wind, umbrella, rain, clothes, temp, mask
     list = await get_list(location, key)
     rain_return = await rain_func(list)
     temp_return = await temp_func(list)
     wind = await wind_func(list)   
+    mask = await mask_func(location, key)
 
     umbrella = rain_return.rain_bool
     rain = rain_return.rain_array
     clothes = temp_return.clothes
     temp = temp_return.temp
-    console.log({umbrella, clothes, rain, temp, wind})
+    return({umbrella, clothes, rain, temp, wind, mask})
 }
 
-weather("Moscow,Russia", "3e2d927d4f28b456c6bc662f34350957")
+const create_object = async(location) => {
+    const key = "3e2d927d4f28b456c6bc662f34350957"
+    let data, mask
+    data = await data_func(location, key)
+    console.log(data)
+}
+
+create_object("Moscow,Russia")
