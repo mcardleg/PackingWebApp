@@ -139,8 +139,7 @@ const data_func = async(location, key) => {
 
 const create_object = async(location) => {
     const key = "3e2d927d4f28b456c6bc662f34350957"
-    let data, mask
-    data = await data_func(location, key)
+    let data = await data_func(location, key)
     console.log(data)
 }
 
