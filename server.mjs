@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import express from 'express';
 
 let rain = (list) => {
     let rain = false
@@ -123,21 +124,42 @@ let pollution = (coord, key) => {
         .catch(error => console.log('error', error));   
 }
 
-let location = "Dublin,Ireland"
-let key = "3e2d927d4f28b456c6bc662f34350957"
+let data_retrieval = (location) => {
+    let key = "3e2d927d4f28b456c6bc662f34350957"
 
-let p1 = new Promise((resolve, reject) => {
-    resolve(weather(location, key))
-});
+    let p1 = new Promise((resolve, reject) => {
+        resolve(weather(location, key))
+    });
+    
+    let p2 = new Promise((resolve, reject) => {
+        resolve(coordinates(location, key))
+    });
+    
+    p2.then(coord => pollution(coord, key))
+        .then(mask => console.log(mask))
 
-let p2 = new Promise((resolve, reject) => {
-    resolve(coordinates(location, key))
-});
+    //Promise.all([p1, p2]).then(console.log("reached"))
+}
 
-p2.then(coord => pollution(coord, key))
-    .then(mask => console.log(mask))
+let server = () => {
+    const port = 3000
+    var app = express();
+    
+    app.get('/', function (req, res) {
+       res.send('Hello');
+    })
+    
+    var server = app.listen(port, function () {
+       var host = server.address().address
+       var port = server.address().port
+       
+       console.log("Example app listening at http://%s:%s", host, port)
+    })
+}
 
-//Promise.all([p1, p2]).then(console.log("reached"))
+server()
+
+
 
 
 
