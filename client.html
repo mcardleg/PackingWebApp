@@ -1,21 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Pack for your trip with the weather in mind!</title>
+    <title>WeatherPacker!</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
 </head>
 
 <body>
-    <div id="app">
-        {{ message }}
+    <div id="instruction">
+        <span>Enter the location of your trip in the box below.</span>
+        <br><br>
     </div>
+
+    <div class="inputs">
+        <input type="hidden" ref="inputs_ref">
+        <span>City:</span>
+        <br>
+        <input v-model="city">
+        <br><br>
+        <span>Country:</span>
+        <br>
+        <input v-model="country">
+        <br><br>
+        <button type="button" v-on:click="send_inputs()">Get weather</button>
+    </div>
+
     <script>
-        var app = new Vue({
-            el: '#app',
+        var city, country
+        new Vue({
+            el: ".inputs",
             data: {
-                message: 'Hello Vue!'
+                city: null,
+                country: null
+            },
+            methods: {
+                send_inputs() {
+                city = this.city
+                country = this.country
+                console.log(city)
+                console.log(country)
+                }
             }
-        })
+        });
     </script>
 </body>
 
