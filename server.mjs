@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import express from 'express';
+import bodyParser from "body-parser";
 
 const rain_func = (list) => {
     let prom = new Promise(resolve => {
@@ -68,7 +69,7 @@ const get_list = (location, key) => {
         method: 'GET',
         redirect: 'follow'
     };
-    
+    console.log(url)
     return (fetch(url, requestOptions)
         .then(response => response.json())
         .then(result => {
@@ -76,7 +77,7 @@ const get_list = (location, key) => {
             list = result.list
             return(list)
         })
-        .catch(error => console.log('error', error))   
+        .catch(error => console.log('error', error)) 
     )
 }
 
@@ -137,7 +138,7 @@ const data_func = async(location, key) => {
     return({umbrella, clothes, rain, temp, wind, mask})
 }
 
-const create_json = async(location) => {
+const json_func = async(location) => {
     const key = "3e2d927d4f28b456c6bc662f34350957"
     let object = await data_func(location, key)
     let json = JSON.stringify(object)
@@ -147,10 +148,12 @@ const create_json = async(location) => {
 const server = async() => {
     const port = 3000
     var app = express();
+    app.use(bodyParser.urlencoded({ extended: true }));
+    app.use(bodyParser.json());
     
     app.get('/', async(req, res) => {
-        let data = await create_json("Dublin,Ireland")
-        //console.log(data)
+        const location = req.query.location
+        const data = await json_func(location)
         res.send(data)
     })
     
