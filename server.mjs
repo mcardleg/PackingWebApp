@@ -1,6 +1,8 @@
 import fetch from 'node-fetch';
 import express from 'express';
-import bodyParser from "body-parser";
+import bodyParser from 'body-parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const rain_func = (list) => {
     let prom = new Promise(resolve => {
@@ -69,7 +71,6 @@ const get_list = (location, key) => {
         method: 'GET',
         redirect: 'follow'
     };
-    console.log(url)
     return (fetch(url, requestOptions)
         .then(response => response.json())
         .then(result => {
@@ -77,6 +78,7 @@ const get_list = (location, key) => {
             list = result.list
             return(list)
         })
+        .then(console.log("Get request received."))
         .catch(error => console.log('error', error)) 
     )
 }
@@ -146,12 +148,21 @@ const json_func = async(location) => {
 }
 
 const server = async() => {
-    const port = 3000
+    const port = 8080
     var app = express();
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
+
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    let publicPath= path.resolve(__dirname,"public")
+    app.use(express.static(publicPath))
     
-    app.get('/', async(req, res) => {
+
+    app.get('/', (req, res) => {
+        res.sendFile('./client.html', { root: __dirname });
+    });
+    
+    app.get('/get_weather', async(req, res) => {
         const location = req.query.location
         const data = await json_func(location)
         res.send(data)

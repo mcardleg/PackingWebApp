@@ -25,22 +25,36 @@
     </div>
 
     <script>
-        var city, country
-        new Vue({
-            el: ".inputs",
-            data: {
-                city: null,
-                country: null
-            },
-            methods: {
-                send_inputs() {
-                city = this.city
-                country = this.country
-                console.log(city)
-                console.log(country)
-                }
+    const get_func = (location) => {
+        let fullurl = 'http://localhost:8080/get_weather/?location=' + location
+
+        var requestOptions = {
+            method: 'GET',
+            redirect: 'follow',
+        };
+        return (fetch(fullurl, requestOptions)
+            .then(response => response.json())
+            .catch(error => console.log('error', error)) 
+        )
+    }
+    
+    var city, country, data, location
+    new Vue({
+        el: ".inputs",
+        data: {
+            city: null,
+            country: null
+        },
+        methods: {
+            async send_inputs() {
+            city = this.city
+            country = this.country
+            location = 'Dublin,Ireland'
+            //data = await get_func(location)
+            console.log("reached")
             }
-        });
+        }
+    });
     </script>
 </body>
 
