@@ -25,20 +25,24 @@
     </div>
 
     <script>
-    const get_func = (location) => {
-        let fullurl = 'http://localhost:8080/get_weather/?location=' + location
+    var city, country, data, location
+
+    let get_from_api = (location) => {
+        let url = 'http://localhost:8080/get_weather/?location=' + location
 
         var requestOptions = {
             method: 'GET',
             redirect: 'follow',
         };
-        return (fetch(fullurl, requestOptions)
+
+        console.log("Sent get request")
+
+        return (fetch(url, requestOptions)
             .then(response => response.json())
             .catch(error => console.log('error', error)) 
         )
     }
     
-    var city, country, data, location
     new Vue({
         el: ".inputs",
         data: {
@@ -49,9 +53,8 @@
             async send_inputs() {
             city = this.city
             country = this.country
-            location = 'Dublin,Ireland'
-            //data = await get_func(location)
-            console.log("reached")
+            data = await get_from_api(city + ',' + country)
+            console.log(data)
             }
         }
     });
