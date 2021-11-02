@@ -30,19 +30,19 @@ const temp_func = (list) => {
         var clothes
 
         for (let i=0; i<list.length; i++){
-            sum = sum + list[i].main.temp
-            temp[i] = list[i].main.temp
+            sum = sum + list[i].main.temp  - 273.15
+            temp[i] = Math.round(list[i].main.temp - 273.15)
         }
-        let avg_temp = sum / list.length - 273.15
+        let avg_temp = sum / list.length
     
         if (avg_temp < 10){
-            clothes = "Cold"
+            clothes = "cold"
         }
         else if (avg_temp >= 20){
-            clothes = "Hot"
+            clothes = "hot"
         }
         else {
-            clothes = "Warm"
+            clothes = "warm"
         }
         resolve({clothes, temp})
     })

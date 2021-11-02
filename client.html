@@ -22,12 +22,56 @@
         <input v-model="country">
         <br><br>
         <button type="button" v-on:click="send_inputs()">Get weather</button>
+        <br><br><br>
     </div>
 
-    <script>
-    var city, country, data, location
+    <div class="results">
+        <input type="hidden" ref="results_ref">
+        <span v-if="submitted">Packing suggestions: </span>
+        <br><br>
+        <span v-if="submitted">You should pack clothes for {{clothes}} weather.</span>
+        <br><br>
+        <span v-if="submitted">You {{umbrella}} need to pack an umbrella.</span>
+        <br><br>
+        <span v-if="submitted">You {{mask}} need to pack a mask.</span>
+        <br><br><br>
+    </div>
 
-    let get_from_api = (location) => {
+    <div class="table">
+        <table v-if="submitted">
+            <tr>
+                <th>Time from now (hrs)</th>
+                <th>Rainfall (ml)</th>
+                <th>Average temperature (Degrees Celcius)</th>
+                <th>Average windspeed (km/h)</th>
+            </tr>
+            <!-- v-for="temp_value in temp" v-for="wind_value in wind" -->
+
+            <tr v-for="value in object" :key="value.weather">
+                <td>{{value.time}}</td>
+                <td>{{value.rain}}</td>
+                <td>{{value.temp}}</td>
+                <td>{{value.wind}}</td>
+            </tr>
+        </table>
+    </div>
+
+    <style>
+        table{
+            border-collapse:collapse;
+            width: 60%;
+        }
+        td, th {
+            border:1px solid #000000;
+            text-align: center;
+        }
+    </style>
+
+    <script>
+    var city, country, data
+    var objects_arr = []
+
+    const get_from_api = (location) => {
         let url = 'http://localhost:8080/get_weather/?location=' + location
 
         var requestOptions = {
@@ -42,8 +86,52 @@
             .catch(error => console.log('error', error)) 
         )
     }
+
+    const handle_results = (data) => {
+        results_vue.clothes = data.clothes
+        if (data.umbrella == true){
+            results_vue.umbrella = "do"
+        }
+        else {
+            results_vue.umbrella = "don't"
+        }
+        if (data.mask == true){
+            results_vue.mask = "do"
+        }
+        else {
+            results_vue.mask = "don't"
+        }
+        for (let i=0; i<data.rain.length; i++){
+            var object = {
+                time: i*3,
+                rain: data.rain[i],
+                temp: data.temp[i],
+                wind: data.wind[i]
+            }
+            objects_arr[i] = object
+        }
+        table_vue.object = objects_arr
+    }
     
-    new Vue({
+    var results_vue = new Vue({
+        el:".results",
+        data: {
+            submitted: false,
+            clothes: '',
+            umbrella: '',
+            mask: ''
+        }
+    });
+
+    var table_vue = new Vue({
+        el:".table",
+        data: {
+            submitted: false,
+            object:{}
+        }
+    });
+
+    var submit_vue = new Vue({
         el: ".inputs",
         data: {
             city: null,
@@ -51,13 +139,16 @@
         },
         methods: {
             async send_inputs() {
-            city = this.city
-            country = this.country
-            data = await get_from_api(city + ',' + country)
-            console.log(data)
+                city = this.city
+                country = this.country
+                data = await get_from_api(city + ',' + country)
+                handle_results(data)
+                results_vue.submitted = true
+                table_vue.submitted = true
             }
         }
     });
+
     </script>
 </body>
 
